@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<style>
+body{
+	font-family: 'Lato', sans-serif;
+	font-weight: 300;
+	overflow: none;
+	
+}
+h1 {
+	font-weight: 700;
+}
+h4 {
+	margin-top: -23px;
+}
+#chart { 
+	height: 500px; 
+}
+#text {
+	position: absolute;
+	top: 200px;
+	right: 100px;
+}
+#title {
+	position: absolute;
+	top: 50px;
+	z-index: -10;
+}
+.title {
+	position: absolute;
+	top: 120px;
+	width: 20%;
+}
+.link {
+	line-height: 40px;
+}
+.link:hover {
+	color: red;
+}
+.circle {
+	opacity: 0.7;
+}
+.circle:hover {
+	fill: red;
+    stroke: red;
+    opacity: 1;
+    stroke-width: 10px;
+}
+.circle-hover {
+	fill: red;
+    stroke: red;
+    opacity: 1;
+    stroke-width: 10px;
+}
+a.navbar-brand {
+	background-image: url("https://raw.githubusercontent.com/Kaz-A/dog_names/master/images/dohmh_logo.png");
+	background-size: cover;
+	width: 109px;
+	height: 70px;
+	margin-top: -28px;
+}
+.navbar-default {
+	background-color: transparent;
+	border-color: transparent;
+}
+.navbar-dohmh {
+	background-color: black;
+	border-radius: 0px;
+}
+.navbar-default .navbar-nav>li>a {
+	color: white;
+}
+.navbar-default .navbar-nav>li>a:hover {
+	color: red;
+}
+.navbar-default .navbar-nav>li>a:focus {
+	color: white;
+}
+.navbar {
+	margin-bottom: 0px;
+}
+.navbar-default .navbar-toggle {
+	border-color: transparent;
+}
+</style>
+
+<body>
+
+<div class="container">	
+	<div id="title">
+	</div>
+	<div class="title">
+       
+    	<input type="text" id="userInput" class="form-control" placeholder="Search Name">        
+	</div>
+
+	
+        
+
+	<div id = "chart">
+		<div id = "text"></div>
+	</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+
+
+
+<script>
+var color = d3.scale.linear().range(["#156b87","purple"]);
+var size = 1000;
+var pack = d3.layout.pack()
+    .sort(null)
+    .size([size, size-100])
+    .value(function(d) { return d.Count_AnimalName * 10; })
+    .padding(2);
+var svg = d3.select("#chart").append("svg")
+    .attr("width", size)
+    .attr("height", size)
+    .style("display", "block")
+    .style("margin", "auto");
+d3.csv("https://raw.githubusercontent.com/Kaz-A/dog_names/master/dogNames2.csv", ready);
+function ready(error, data) {
+	if (error) throw error;
+	console.log(data);
+	data.forEach(function(d) {
+		d.Count_AnimalName = +d.Count_AnimalName;
+	});
+  	color.domain(d3.extent(data, function(d) { return d.Count_AnimalName; }));
+  	
+  	var circles = svg.selectAll("circle")
+	    .data(pack.nodes({children: data}).slice(1))
+	    .enter().append("circle")
+	    .attr("class", "circle")
+	    .attr("r", function(d) { return d.r; })
+	    .attr("cx", function(d) { return d.x; })
+	    .attr("cy", function(d) { return d.y; })
+	    .style("fill", function(d) { return color(d.Count_AnimalName); })
+	    .on("mouseover", function(d){
+	    	d3.select("#text").html("<h2>" + d.Row_Labels + "</h2><br /><h4>" + d.Count_AnimalName + " dog names</h4>");
+      	})
+      	.on("mouseout", function(d) {      
+          	d3.select("#text").html("");
+        });
+ 
+	// search
+  	d3.select("#userInput").on("keyup", search);
+	function search(value, d) {
+		var input = this.value.toUpperCase();  
+		var name = d.Row_Labels;		
+	    var name = input;	
+	    console.log(name);
+	    // get the count for user-input name	    
+	    var nameObj = data.filter(function(d) { return d.Row_Labels == input });
+	    console.log(nameObj);
+	    var count = nameObj[0].Count_AnimalName;
+	    console.log(count);
+	    circles.classed("circle-hover", function(d) { return name == d.Row_Labels; });
+	    var subtext = d3.select("#text").html("<h2>" + name + "</h2><br />");
+	    subtext.append("h4")
+	    	.text(name == "" ? "" : count + " dog names");
+	};
+	function unsearch(d) {
+    	circles.classed("circle-hover", false);
+    	d3.select("#text").html("");
+  	};
+};
+d3.select(self.frameElement).style("height", size + "px");
+</script>
+
+
+</body>
