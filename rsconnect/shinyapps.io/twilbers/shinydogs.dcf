@@ -1,0 +1,13 @@
+name: shinydogs
+title:
+username:
+account: twilbers
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 515848
+bundleId: 1644765
+url: https://twilbers.shinyapps.io/shinydogs/
+when: 1539649252.87348
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData

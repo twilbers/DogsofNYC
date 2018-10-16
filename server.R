@@ -35,12 +35,12 @@ function(input, output) {
   })
   
   output$percapita = renderPlotly({
-    shape@data %>%
+    p = shape@data %>%
       group_by(., PO_NAME) %>%
       summarise(., DogsPerCapita = sum(num_dgs)/(sum(POPULAT/100000))) %>%
       filter(., !is.na(DogsPerCapita)) %>%
       select(., PO_NAME, DogsPerCapita) %>%
-        ggplot(.,aes(x = PO_NAME, y = DogsPerCapita)) +
+        ggplot(.,aes(text=sprintf("Area: %s<br> Dogs per Capita (100K): %s", PO_NAME, DogsPerCapita), x = PO_NAME, y = DogsPerCapita)) +
           geom_col(aes(fill = PO_NAME)) +
           theme(legend.position="top",
             axis.text.x=element_blank(),
@@ -49,19 +49,24 @@ function(input, output) {
           labs(xlab("")) +
           labs(ylab("Dogs per capita (100K)"))
     
+    ggplotly(p,tooltip = "text") %>%
+      config(displayModeBar = FALSE)
+    
     
   })
   
   output$bar_capita = renderPlotly({
-    shape@data %>%
+   p =  shape@data %>%
       mutate(., Borough = ifelse(Borough == "New York", "Manhattan", Borough)) %>%
-      ggplot(., aes(x = factor(ZIPCODE), y = num_dgs)) +
-          geom_col(aes(fill = Borough )) +
-          geom_point(aes(y = DogsPerCapita, fill = Borough)) +
+      ggplot(., aes(text=sprintf("Zip Code: %s<br> Number of Dogs: %s", ZIPCODE, num_dgs), x = factor(ZIPCODE), y = num_dgs)) +
+          geom_col(aes(text = "", fill = Borough )) +
+          geom_point(aes(text=sprintf("Dogs per Capita (100K): %s", DogsPerCapita), y = DogsPerCapita, fill = Borough)) +
           scale_x_discrete(breaks=seq(1000, 11697, 3))+ 
           theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
           labs(xlab("Zip Code")) +
           labs(ylab("Dog Count"))
+   ggplotly(p,tooltip = "text") %>%
+     config(displayModeBar = FALSE)
 
   })
   
@@ -73,8 +78,8 @@ function(input, output) {
       addPolygons(popup =~paste("<b>Zip</b>:", factor(ZIPCODE), "<br/>",
                                 "<b>Number of Dogs:</b>", factor(num_dgs), "<br/>",
                                 "<b>Population:</b>", factor(POPULAT), "<br/>",
-                                "<b>Breed:</b>", input$selectedBreed, paste0("(",factor(shape@data[[input$selectedBreed]]),")"), "<br/>",
-                                "<b>Name:</b>", top_names(input$selectedBreed, as.integer(ZIPCODE))),
+                                "<b>Breed:</b>", input$selectedBreed, paste0("(",factor(shape@data[[input$selectedBreed]]),")")),
+                                #"<b>Name:</b>", top_names(input$selectedBreed, as.integer(ZIPCODE))),
                   label  = ~factor(ZIPCODE),
                   color = ~define_pal(shape@data[[input$selectedBreed]])(shape@data[[input$selectedBreed]]), 
                   stroke = T) %>%
@@ -111,13 +116,13 @@ function(input, output) {
   })
   
   # Names page
-  output$nameCloud = renderWordcloud2({
-    bf = breedFreq(dogs, input$selectedBreed)
-    wordcloud2(data = bf,  size = .5)
+  output$nameCloud = renderPlot({
+    bf = breedFreq(dogs, input$selectedBreed2)
+    wordcloud(bf$AnimalName, bf$count, colors=brewer.pal(8, "Dark2"))
   })
   
   output$nameTable = renderDataTable({
-    datatable(as.data.frame(breedFreq(dogs, input$selectedBreed), rownames=FALSE)) %>% 
+    datatable(as.data.frame(breedFreq(dogs, input$selectedBreed2), rownames=FALSE)) %>% 
       formatStyle(1:2, background="skyblue", fontWeight='bold')
     
   })

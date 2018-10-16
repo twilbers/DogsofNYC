@@ -1,4 +1,3 @@
-library(DT)
 library(shinydashboard)
 
 shinyUI(dashboardPage(
@@ -11,13 +10,10 @@ shinyUI(dashboardPage(
       menuItem("Borough Diversity", tabName = "borough_stats", icon = icon("bar-chart")),
       menuItem("Dog Names", tabName = "names", icon = icon("paw")),
       menuItem("Bubble", tabName = "bubble", icon = icon("circle")),
-      menuItem("How unique is my dog?", tabName = "uniq", icon = icon("question"))
+      menuItem("How unique is my dog?", tabName = "uniq", icon = icon("question")))
       
     ),
-    selectizeInput("selectedBreed",
-                   "Select Dog Breed",
-                   c("All" = "num_dgs", names(shape@data[19:length(shape@data)])))
-  ),
+   
   dashboardBody(
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
@@ -35,13 +31,19 @@ shinyUI(dashboardPage(
               ),
     
       tabItem(tabName = "breed_map",
+              selectizeInput("selectedBreed",
+                             "Select Dog Breed",
+                             c("All" = "num_dgs", names(shape@data[19:length(shape@data)]))),
               fluidRow(box(leafletOutput("breed_density")),
                         box(plotlyOutput("breed_diversity"))),
               fluidRow(box(plotlyOutput("breed_bar"), width = 12))
               ),
       
       tabItem(tabName = "names",
-              fluidRow(box(wordcloud2Output("nameCloud")),
+              selectizeInput("selectedBreed2",
+                             "Select Dog Breed",
+                             c("All" = "num_dgs", names(shape@data[19:length(shape@data)]))),
+              fluidRow(box(plotOutput("nameCloud")),
                        box(dataTableOutput("nameTable")))
               ),
       
