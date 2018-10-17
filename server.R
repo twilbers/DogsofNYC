@@ -166,7 +166,27 @@ function(input, output) {
     
     output$zipTable = renderDataTable({
       datatable(as.data.frame(boro_table, rownames=FALSE)) %>% 
-        formatStyle(1:3, background="skyblue", fontWeight='bold')
+        formatStyle(1:5, background="skyblue", fontWeight='bold')
+    
+    })
+    
+    output$all_breeds = renderPlotly({
+      d = dogs %>%
+        filter(., BreedName != "Unknown") %>%
+        filter(., Borough == input$selectedBorough) %>%
+        group_by(., Borough, BreedName) %>%
+        summarise(., num_breeds = n()) %>%
+        arrange(., desc(num_breeds)) %>%
+        group_by(., Borough)
+      
+      d$BreedName = factor(d$BreedName, levels = d$BreedName[order(d$num_breeds)])
+      
+      ggplot(d, aes(x = BreedName, y = num_breeds)) +
+        geom_col(aes(fill = BreedName), position = "dodge") +
+        theme(legend.position="top",
+              axis.text.x=element_blank(),
+              axis.ticks.x=element_blank())
+    
     
     })
   

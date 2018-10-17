@@ -42,7 +42,7 @@ shinyUI(dashboardPage(
       tabItem(tabName = "names",
               selectizeInput("selectedBreed2",
                              "Select Dog Breed",
-                             c("All" = "num_dgs", names(shape@data[19:length(shape@data)]))),
+                             c(names(shape@data[19:length(shape@data)]))),
               fluidRow(box(plotOutput("nameCloud")),
                        box(dataTableOutput("nameTable")))
               ),
@@ -51,11 +51,11 @@ shinyUI(dashboardPage(
       
       tabItem(tabName = "borough_stats",
               selectizeInput("selectedBorough",
-                             "Select Borough", c("Brooklyn", "Bronx", "Manhattan", "Queens", "Statten Island")),
+                             "Select Borough", c("Brooklyn", "Bronx", "Manhattan", "Queens", "Staten Island")),
               fluidRow(box(plotlyOutput("top_breeds")),
-                       box(plotlyOutput("unique_breed"))),
-              fluidRow(box(plotlyOutput("density")),
-                       box(dataTableOutput("zipTable")))
+                       box(plotlyOutput("density"))),
+              fluidRow(plotlyOutput("all_breeds")),
+              fluidRow(dataTableOutput("zipTable"))
 
               ),
   

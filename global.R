@@ -5,7 +5,6 @@ library(DT)
 library(tm)
 library(wordcloud)
 library(memoise)
-#library(wordcloud2)
 library(plotly)
 library(leaflet)
 library(googleVis)
@@ -71,21 +70,23 @@ top_names = function(breed, zip_){
   return(out)
 }
 
-boro_table = dogs %>%
-  #mutate(., Borough = ifelse(Borough == "New York" | Borough == "New york" | Borough == "NEW YORK" | Borough == "NY" | Borough == "New York ", "Manhattan", Borough)) %>%
-  filter(., Borough %in% c("Brooklyn", "Bronx", "Manhattan", "Queens", "Statten Island")) %>%
-  filter(., ZipCode %in% shape@data$ZIPCODE) %>%
-  group_by(., Borough) %>%
-  summarise(., num_dogs = n()) %>%
-  mutate(., density = num_dogs/sum(num_dogs))
 
 zip_table = dogs %>%
   #mutate(., Borough = ifelse(Borough == "New York" | Borough == "New york" | Borough == "NEW YORK" | Borough == "NY" | Borough == "New York ", "Manhattan", Borough)) %>%
-  filter(., Borough %in% c("Brooklyn", "Bronx", "Manhattan", "Queens", "Statten Island")) %>%
+  filter(., Borough %in% c("Brooklyn", "Bronx", "Manhattan", "Queens", "Staten Island")) %>%
   filter(., ZipCode %in% shape@data$ZIPCODE) %>%
   group_by(., Borough, ZipCode) %>%
   summarise(., num_z = n()) %>%
   group_by(., Borough) %>%
   summarise(., Total_Zipcodes = n())
 
+boro_table = dogs %>%
+  #mutate(., Borough = ifelse(Borough == "New York" | Borough == "New york" | Borough == "NEW YORK" | Borough == "NY" | Borough == "New York ", "Manhattan", Borough)) %>%
+  filter(., Borough %in% c("Brooklyn", "Bronx", "Manhattan", "Queens", "Staten Island")) %>%
+  filter(., ZipCode %in% shape@data$ZIPCODE) %>%
+  group_by(., Borough) %>%
+  summarise(., num_dogs = n()) %>%
+  mutate(., ProportionofDogs = num_dogs/sum(num_dogs)) %>%
+  left_join(., zip_table)
 
+boro_table$Population = c(1471160, 2648771, 1664727, 2358582, 479458)
