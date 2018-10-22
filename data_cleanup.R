@@ -83,49 +83,31 @@ sh_join_dogs = sh_obj@data %>%
   # Add Percapita unless population is 0
   mutate(., dogs_per_capita = num_dogs%%(ifelse(POPULATION == 0, NA, POPULATION))) %>%
   left_join(x = ., y = breed_counts)
-  
-
-
-write.csv(sh_join_dogs, "dogs_joined2.csv")
-
 
 simulation = function(){
   #shape@data$ZIPCODE = sub('[.]', 'N', make.names(shape@data$ZIPCODE, unique=TRUE))
-  
   filter = (!is.na(shape@data$num_dgs)) & shape@data$POPULAT != 0 & shape@data$ZIPCODE != 11370 & shape@data$ZIPCODE != 10463
   num_sim = 1e4
   means_df = data.frame(ZIPCODE = shape@data$ZIPCODE[filter], means = rep(0, length(shape@data$ZIPCODE[filter])))
-  #means_df$sim = 0
   for (i in 1:num_sim){
     spl = sample(means_df$ZIPCODE, sum(shape@data$num_dgs[filter]), replace = T, prob = shape@data$POPULAT[filter])
     spl_df = data.frame(ZIPCODE = spl) %>%
       group_by(., ZIPCODE) %>%
       summarise(., count = n()) %>%
       right_join(., means_df)
-    #means_df = cbind(means_df, spl_df[,2])}
     means_df$means = means_df$means + spl_df$count
-    #spl_df = spl_df[order(match(spl_df$zip, means_df$zip)), ]
-    #means_df$means[means_df$zip %in% spl_df$zip] = means_df$means[means_df$zip %in% spl_df$zip] + spl_df$count
-
   }
   means_df$means = means_df$means / num_sim
   
-  means_df$ZIPCODE =shape@data$ZIPCODE[filter]
-  
-  shape_test = shape@data %>%
+  # Add simulated mean to shape object
+  shape_test = sh_join_dogs %>%
     left_join(x= ., y = unique(means_df), by = "ZIPCODE")
-  
-  shape@data$means = shape_test$means
-  
-  means_df$zip[max((means_df$means-shape@data$num_dgs[!is.na(shape@data$num_dgs)])) == means_df$means-shape@data$num_dgs[!is.na(shape@data$num_dgs)]]
-  means_df$zip[c(means_df$means-shape@data$num_dgs[filter]) %in% 
-                 c(tail(sort(means_df$means-shape@data$num_dgs[filter]), 10))]
-  means_df$zip[c(means_df$means-shape@data$num_dgs[filter]) > 1000]
-  
-  shape@data$POPULAT[c(means_df$means-shape@data$num_dgs[filter]) %in% 
-                       c(tail(sort(means_df$means-shape@data$num_dgs[filter]), 10))]
+
+  sh_join_dogs$means = shape_test$means
   }
 
+# Write shape object to a csv
+write.csv(sh_join_dogs, "dogs_joined2.csv")
 
 # Add filds from temporary table to shape object
 sh_obj@data$num_dogs = sh_join_dogs$num_dogs
