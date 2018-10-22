@@ -52,9 +52,9 @@ shinyUI(dashboardPage(
       tabItem(tabName = "borough_stats",
               selectizeInput("selectedBorough",
                              "Select Borough", c("Brooklyn", "Bronx", "Manhattan", "Queens", "Staten Island")),
-              fluidRow(box(plotlyOutput("top_breeds")),
-                       box(plotlyOutput("density"))),
-              fluidRow(plotlyOutput("all_breeds")),
+              fluidRow(plotlyOutput("top_breeds")),
+                       #box(plotlyOutput("density"))),
+              #fluidRow(plotlyOutput("all_breeds")),
               fluidRow(dataTableOutput("zipTable"))
 
               ),

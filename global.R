@@ -13,6 +13,7 @@ library(ggvis)
 
 shape = readOGR("./shape/shape2.shp", stringsAsFactors = F)
 
+
 #dogs_join = read.csv("dogs_joined2.csv")
 dogs_join = read.csv("dogs_joined.csv", stringsAsFactors = F)
 

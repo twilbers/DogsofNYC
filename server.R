@@ -58,10 +58,11 @@ function(input, output) {
   output$bar_capita = renderPlotly({
    p =  shape@data %>%
       mutate(., Borough = ifelse(Borough == "New York", "Manhattan", Borough)) %>%
+      filter(., num_dgs > 20) %>%
       ggplot(., aes(text=sprintf("Zip Code: %s<br> Number of Dogs: %s", ZIPCODE, num_dgs), x = factor(ZIPCODE), y = num_dgs)) +
           geom_col(aes(text = "", fill = Borough )) +
           geom_point(aes(text=sprintf("Dogs per Capita (100K): %s", DogsPerCapita), y = DogsPerCapita, fill = Borough)) +
-          scale_x_discrete(breaks=seq(1000, 11697, 3))+ 
+          scale_x_discrete(breaks=seq(1000, 11697, 5))+ 
           theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
           labs(xlab("Zip Code")) +
           labs(ylab("Dog Count"))
@@ -119,6 +120,8 @@ function(input, output) {
   output$nameCloud = renderPlot({
     bf = breedFreq(dogs, input$selectedBreed2)
     wordcloud(bf$AnimalName, bf$count, colors=brewer.pal(8, "Dark2"))
+    #wordcloud2(breedFreq(dogs, "Yorkshire Tarier"), figPath ="www/dachshund.jpg")
+    
   })
   
   output$nameTable = renderDataTable({
@@ -141,16 +144,21 @@ function(input, output) {
   })
   
   output$top_breeds = renderPlotly({
-    dogs %>%
+    d = dogs %>%
       filter(., BreedName != "Unknown") %>%
       filter(., Borough == input$selectedBorough) %>%
       group_by(., Borough, BreedName) %>%
       summarise(., num_breeds = n()) %>%
       arrange(., desc(num_breeds)) %>%
       group_by(., Borough) %>%
-      filter(., row_number() <= 10) %>%
-        ggplot(., aes(x = BreedName, y = num_breeds)) +
+      filter(., row_number() <= 10)
+  
+    d$BreedName = factor(d$BreedName, levels = d$BreedName[order(d$num_breeds)])
+    
+        ggplot(d, aes(x = BreedName, y = num_breeds)) +
           geom_col(aes(fill = BreedName), position = "dodge") +
+          ylab("Numer of breed")+
+          xlab("Breed name")+
           theme(axis.text.x = element_text(angle = 60, hjust = 1))
    
   })
@@ -180,13 +188,12 @@ function(input, output) {
         group_by(., Borough)
       
       d$BreedName = factor(d$BreedName, levels = d$BreedName[order(d$num_breeds)])
-      
+    
       ggplot(d, aes(x = BreedName, y = num_breeds)) +
         geom_col(aes(fill = BreedName), position = "dodge") +
         theme(legend.position="top",
               axis.text.x=element_blank(),
               axis.ticks.x=element_blank())
-    
     
     })
   
